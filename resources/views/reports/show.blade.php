@@ -2,8 +2,18 @@
 
 @section('content')
     <div class="max-w-3xl mx-auto py-8 px-4">
-        <h1 class="text-2xl font-bold mb-1">{{ $report->title }}</h1>
-        <p class="text-gray-500 mb-6">{{ $report->chapters->count() }} bab</p>
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-2xl font-bold mb-1">{{ $report->title }}</h1>
+                <p class="text-gray-500">{{ $report->chapters->count() }} bab</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('reports.export.pdf', $report) }}"
+                    class="bg-red-600 text-white px-3 py-2 rounded text-sm">Export PDF</a>
+                <a href="{{ route('reports.export.word', $report) }}"
+                    class="bg-blue-800 text-white px-3 py-2 rounded text-sm">Export Word</a>
+            </div>
+        </div>
 
         @if (session('success'))
             <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
