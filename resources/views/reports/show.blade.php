@@ -8,6 +8,8 @@
                 <p class="text-gray-500">{{ $report->chapters->count() }} bab</p>
             </div>
             <div class="flex gap-2">
+                <a href="{{ route('reports.edit', $report) }}"
+                    class="bg-gray-200 text-gray-800 px-3 py-2 rounded text-sm">Edit Laporan</a>
                 <a href="{{ route('reports.export.pdf', $report) }}"
                     class="bg-red-600 text-white px-3 py-2 rounded text-sm">Export PDF</a>
                 <a href="{{ route('reports.export.word', $report) }}"
@@ -26,12 +28,12 @@
             @forelse($report->chapters as $chapter)
                 <div class="border rounded p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="font-semibold text-lg">
-                            BAB {{ $chapter->roman_number }}
+                        <div class="text-center mb-2">
+                            <h2 class="font-semibold text-lg">BAB {{ $chapter->roman_number }}</h2>
                             @if ($chapter->title)
-                                — {{ $chapter->title }}
+                                <p class="font-semibold text-lg uppercase">{{ $chapter->title }}</p>
                             @endif
-                        </h2>
+                        </div>
                         <div class="flex gap-3 text-sm">
                             <details class="relative">
                                 <summary class="text-blue-600 cursor-pointer list-none">Edit</summary>

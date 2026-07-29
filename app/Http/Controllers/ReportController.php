@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Shared\Html;
 
 class ReportController extends Controller
 {
     public function index()
     {
-        $reports = Report::latest()->get();
+        $reports = Report::withCount('chapters')->latest()->get();
         return view('reports.index', compact('reports'));
     }
 
@@ -25,7 +26,12 @@ class ReportController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'logo' => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('logos', 'public');
+        }
 
         $report = Report::create($validated);
 
@@ -48,12 +54,17 @@ class ReportController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'logo' => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('logos', 'public');
+        }
 
         $report->update($validated);
 
         return redirect()->route('reports.show', $report)
-            ->with('success', 'Judul laporan berhasil diubah.');
+            ->with('success', 'Laporan berhasil diubah.');
     }
 
     public function destroy(Report $report)
@@ -78,17 +89,30 @@ class ReportController extends Controller
         $report->load('chapters.subChapters');
 
         $phpWord = new PhpWord();
-        $section = $phpWord->addSection();
 
-        $section->addText($report->title, ['bold' => true, 'size' => 16], ['alignment' => Jc::CENTER]);
-        $section->addTextBreak(1);
+        // ===== Halaman Cover =====
+        $cover = $phpWord->addSection();
+        $cover->addTextBreak(4);
 
+        if ($report->logo) {
+            $cover->addImage(
+                storage_path('app/public/' . $report->logo),
+                ['width' => 100, 'height' => 100, 'alignment' => Jc::CENTER]
+            );
+            $cover->addTextBreak(1);
+        }
+
+        $cover->addText($report->title, ['bold' => true, 'size' => 20], ['alignment' => Jc::CENTER]);
+        $cover->addTextBreak(1);
+
+        // ===== Isi Laporan (tiap bab di section baru = otomatis page break) =====
         foreach ($report->chapters as $chapter) {
-            $chapterTitle = 'BAB ' . $chapter->roman_number;
+            $section = $phpWord->addSection();
+
+            $section->addText('BAB ' . $chapter->roman_number, ['bold' => true, 'size' => 14], ['alignment' => Jc::CENTER]);
             if ($chapter->title) {
-                $chapterTitle .= ' — ' . $chapter->title;
+                $section->addText(strtoupper($chapter->title), ['bold' => true, 'size' => 14], ['alignment' => Jc::CENTER]);
             }
-            $section->addText($chapterTitle, ['bold' => true, 'size' => 14]);
             $section->addTextBreak(1);
 
             foreach ($chapter->subChapters as $sub) {
@@ -99,7 +123,7 @@ class ReportController extends Controller
                 $section->addText($subTitle, ['bold' => true, 'size' => 12]);
 
                 if ($sub->content) {
-                    $section->addText($sub->content, ['size' => 11]);
+                    $section->addText($sub->content, ['size' => 11], ['alignment' => Jc::BOTH]);
                 }
                 $section->addTextBreak(1);
             }
