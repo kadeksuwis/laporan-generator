@@ -39,4 +39,15 @@ class ChapterController extends Controller
         return redirect()->route('reports.show', $report)
             ->with('success', 'Bab berhasil dihapus.');
     }
+    public function update(Request $request, Chapter $chapter)
+    {
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:255',
+        ]);
+
+        $chapter->update($validated);
+
+        return redirect()->route('reports.show', $chapter->report)
+            ->with('success', 'Judul bab berhasil diubah.');
+    }
 }

@@ -22,35 +22,70 @@
                                 — {{ $chapter->title }}
                             @endif
                         </h2>
-                        <form action="{{ route('chapters.destroy', $chapter) }}" method="POST"
-                            onsubmit="return confirm('Hapus bab ini beserta semua sub babnya?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 text-sm">Hapus Bab</button>
-                        </form>
+                        <div class="flex gap-3 text-sm">
+                            <details class="relative">
+                                <summary class="text-blue-600 cursor-pointer list-none">Edit</summary>
+                                <form action="{{ route('chapters.update', $chapter) }}" method="POST"
+                                    class="absolute right-0 bg-white border rounded p-3 shadow z-10 w-64 mt-1">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="text" name="title" value="{{ $chapter->title }}"
+                                        class="w-full border rounded p-1 text-sm mb-2" placeholder="Judul bab">
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                                        Simpan
+                                    </button>
+                                </form>
+                            </details>
+                            <form action="{{ route('chapters.destroy', $chapter) }}" method="POST"
+                                onsubmit="return confirm('Hapus bab ini beserta semua sub babnya?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600">Hapus Bab</button>
+                            </form>
+                        </div>
                     </div>
 
                     {{-- Daftar Sub Bab --}}
                     <div class="ml-4 space-y-2 mb-3">
                         @forelse($chapter->subChapters as $sub)
-                            <div class="border-l-2 pl-3 py-1 flex justify-between items-start">
-                                <div>
-                                    <p class="font-medium text-sm">
-                                        {{ $sub->number }}
-                                        @if ($sub->title)
-                                            {{ $sub->title }}
+                            <div class="border-l-2 pl-3 py-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium text-sm">
+                                            {{ $sub->number }}
+                                            @if ($sub->title)
+                                                {{ $sub->title }}
+                                            @endif
+                                        </p>
+                                        @if ($sub->content)
+                                            <p class="text-sm text-gray-600">{{ Str::limit($sub->content, 100) }}</p>
                                         @endif
-                                    </p>
-                                    @if ($sub->content)
-                                        <p class="text-sm text-gray-600">{{ Str::limit($sub->content, 100) }}</p>
-                                    @endif
+                                    </div>
+                                    <div class="flex gap-2 text-xs">
+                                        <form action="{{ route('sub-chapters.destroy', $sub) }}" method="POST"
+                                            onsubmit="return confirm('Hapus sub bab ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500">Hapus</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <form action="{{ route('sub-chapters.destroy', $sub) }}" method="POST"
-                                    onsubmit="return confirm('Hapus sub bab ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-500 text-xs">Hapus</button>
-                                </form>
+
+                                <details class="mt-1">
+                                    <summary class="text-blue-500 cursor-pointer list-none text-xs">Edit isi sub bab
+                                    </summary>
+                                    <form action="{{ route('sub-chapters.update', $sub) }}" method="POST"
+                                        class="mt-2 space-y-2">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="text" name="title" value="{{ $sub->title }}"
+                                            class="w-full border rounded p-1 text-sm" placeholder="Judul sub bab">
+                                        <textarea name="content" class="w-full border rounded p-1 text-sm" rows="2">{{ $sub->content }}</textarea>
+                                        <button type="submit" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">
+                                            Simpan
+                                        </button>
+                                    </form>
+                                </details>
                             </div>
                         @empty
                             <p class="text-gray-400 text-sm">Belum ada sub bab.</p>
